@@ -7,7 +7,7 @@ using PersonalPhotos.Models;
 
 namespace PersonalPhotos.Controllers
 {
-    [Authorize]
+   
     public class PhotosController : Controller
     {
         private readonly IFileStorage _fileStorage;
@@ -22,7 +22,6 @@ namespace PersonalPhotos.Controllers
             _fileStorage = fileStorage;
         }
 
-       
         public IActionResult Upload()
         {
             return View();
@@ -43,6 +42,7 @@ namespace PersonalPhotos.Controllers
             return RedirectToAction("Display");
         }
 
+        [Authorize]
         public IActionResult Display()
         {
             var userName = User.Identity.Name;

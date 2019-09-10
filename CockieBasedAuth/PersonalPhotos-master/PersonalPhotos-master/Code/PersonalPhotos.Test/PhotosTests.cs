@@ -30,7 +30,7 @@ namespace PersonalPhotos.Test
             var fromFile = Mock.Of<IFormFile>();
             var model = Mock.Of<PhotoUploadViewModel>(x => x.File == fromFile);
 
-            var controller = new PhotosController(keyGen, accessor, photoMetadata, fileStorage);
+            var controller = new PhotosController(keyGen, photoMetadata, fileStorage);
 
             //Act
             var result = await controller.Upload(model) as RedirectToActionResult;

@@ -2,6 +2,8 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using PersonalPhotos.Models;
+using System.Collections.Generic;
+using System.Security.Claims;
 using System.Threading.Tasks;
 
 namespace PersonalPhotos.Controllers
@@ -10,13 +12,16 @@ namespace PersonalPhotos.Controllers
     {
         private readonly UserManager<IdentityUser> _userManager;
         private readonly SignInManager<IdentityUser> _signInManager;
+        private readonly RoleManager<IdentityRole> _roleManager;
 
         public LoginsController(
             UserManager<IdentityUser> userManager, 
-            SignInManager<IdentityUser> signInManager)
+            SignInManager<IdentityUser> signInManager,
+            RoleManager<IdentityRole> roleManager)
         {
             _userManager = userManager;
             _signInManager = signInManager;
+            _roleManager = roleManager;
         }
 
         public IActionResult Index(string returnUrl = null)
@@ -40,6 +45,13 @@ namespace PersonalPhotos.Controllers
                 ModelState.AddModelError("", "Username and/or Password is incorrect");
                 return View();
             }
+
+            var claims = new List<Claim>();
+            claims.Add(new Claim("Over18Claim", "True"));
+
+            var claimIdentity = new ClaimsIdentity(claims);
+
+            User.AddIdentity(claimIdentity);
 
             if (!string.IsNullOrEmpty(model.ReturnUrl))
             {
@@ -65,12 +77,18 @@ namespace PersonalPhotos.Controllers
                 return View(model);
             }
 
+            if (!(await _roleManager.RoleExistsAsync("Editor")))
+            {
+                await _roleManager.CreateAsync(new IdentityRole("Editor"));
+            }
+
             var user = new IdentityUser
             {
                 UserName = model.Email,
                 Email = model.Email,
             };
 
+           
             var result = await _userManager.CreateAsync(user, model.Password);
 
             if(!result.Succeeded)
@@ -83,6 +101,11 @@ namespace PersonalPhotos.Controllers
                 return View(model);
             }
 
+            if (!User.IsInRole("Editor"))
+            {
+                await _userManager.AddToRoleAsync(user, "Editor");
+            }
+            
             return RedirectToAction("Index", "Logins");
         }
 

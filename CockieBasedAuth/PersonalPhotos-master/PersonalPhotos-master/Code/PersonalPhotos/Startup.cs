@@ -69,6 +69,15 @@ namespace PersonalPhotos
             {
                 opt.LoginPath = "/Logins/Index";
             });
+
+            
+            services.AddAuthorization(opt =>
+            {
+                opt.AddPolicy("EditorOver18Policy", policy =>
+                {
+                    policy.RequireClaim("Over18Claim");
+                });
+            });
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
