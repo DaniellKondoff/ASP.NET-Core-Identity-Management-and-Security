@@ -9,6 +9,8 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using PersonalPhotos.Filters;
+using PersonalPhotos.Interfaces;
+using PersonalPhotos.Services;
 using System;
 using System.Reflection;
 
@@ -35,6 +37,7 @@ namespace PersonalPhotos
             services.AddScoped<IPhotoMetaData, SqlPhotoMetaData>();
             services.AddScoped<IFileStorage, LocalFileStorage>();
             services.AddScoped<LoginAttribute>();
+            services.AddSingleton<IEmail, SmtpEmail>();
 
             var connectionString = Configuration.GetConnectionString("Default");
             var currentAsmName = Assembly.GetExecutingAssembly().GetName().Name;
@@ -78,6 +81,8 @@ namespace PersonalPhotos
                     policy.RequireClaim("Over18Claim");
                 });
             });
+
+            services.Configure<EmailOptions>(Configuration.GetSection("Email"));
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
