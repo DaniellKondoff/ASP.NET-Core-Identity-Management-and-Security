@@ -176,7 +176,7 @@ namespace PersonalPhotos.Controllers
                 await _emailService.Send(model.EmailAddress, emailBody);
             }
 
-            return View();
+            return RedirectToAction("Index");
         }
 
         public async Task<IActionResult> ChangePassword(string userId, string token)
@@ -188,8 +188,9 @@ namespace PersonalPhotos.Controllers
             }
 
             var model = new ChangePasswordViewModel();
-            model.EmailAddress = user.Email;
-            model.Token = token;
+            ViewData["EmailAddress"] = user.Email;
+            TempData["EmailAddress"] = user.Email;
+            TempData["PasswordToken"] = token;
 
             return View(model);
         }
@@ -202,9 +203,10 @@ namespace PersonalPhotos.Controllers
                 ModelState.AddModelError("", "Error in resseting a password");
                 return View(model);
             }
-
-            var user = await _userManager.FindByEmailAsync(model.EmailAddress);
-            var resetPasswordResult = await _userManager.ResetPasswordAsync(user, model.Token, model.Password);
+            string emailAddress = TempData["EmailAddress"].ToString();
+            string token = TempData["PasswordToken"].ToString();
+            var user = await _userManager.FindByEmailAsync(emailAddress);
+            var resetPasswordResult = await _userManager.ResetPasswordAsync(user, token, model.Password);
 
 
             return RedirectToAction("Index");
