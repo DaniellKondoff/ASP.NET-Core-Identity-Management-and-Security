@@ -187,12 +187,11 @@ namespace PersonalPhotos.Controllers
                 return View();
             }
 
-            var model = new ChangePasswordViewModel();
             ViewData["EmailAddress"] = user.Email;
             TempData["EmailAddress"] = user.Email;
             TempData["PasswordToken"] = token;
 
-            return View(model);
+            return View();
         }
 
         [HttpPost]
