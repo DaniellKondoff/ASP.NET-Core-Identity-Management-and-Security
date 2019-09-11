@@ -43,6 +43,14 @@ namespace PersonalPhotos.Controllers
                 return View("Login", model);
             }
 
+            var user = await _userManager.FindByEmailAsync(model.Email);
+
+            if (user == null || !user.EmailConfirmed)
+            {
+                ModelState.AddModelError("", "User not found or Email is not Confirmed");
+                return View("Login", model);
+            }
+
             var result = await _signInManager.PasswordSignInAsync(model.Email, model.Password, model.RememberMe, false);
             if (!result.Succeeded)
             {
@@ -139,9 +147,67 @@ namespace PersonalPhotos.Controllers
                 return RedirectToAction("Index");
             }
 
-            ViewData["Error"] = "Error with validating the email address";       
+            ViewData["Error"] = "Error with validating the email address";
 
             return View();
+        }
+
+        public async Task<IActionResult> ResetPassword()
+        {
+            return View();
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> ResetPassword(ResetPasswordViewModel model)
+        {
+            if (!ModelState.IsValid)
+            {
+                return View(model);
+            }
+
+            var user = await _userManager.FindByEmailAsync(model.EmailAddress);
+
+            if (user != null && user.EmailConfirmed)
+            {
+                var token = await _userManager.GeneratePasswordResetTokenAsync(user);
+                var url = Url.Action("ChangePassword", "Logins", new { userId = user.Id, token }, protocol:HttpContext.Request.Scheme);
+                var emailBody = $"Click on the link for resetting your password <br /> {url}";
+
+                await _emailService.Send(model.EmailAddress, emailBody);
+            }
+
+            return View();
+        }
+
+        public async Task<IActionResult> ChangePassword(string userId, string token)
+        {
+            var user = await _userManager.FindByIdAsync(userId);
+            if(user == null)
+            {
+                return View();
+            }
+
+            var model = new ChangePasswordViewModel();
+            model.EmailAddress = user.Email;
+            model.Token = token;
+
+            return View(model);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> ChangePassword(ChangePasswordViewModel model)
+        {
+            if (!ModelState.IsValid)
+            {
+                ModelState.AddModelError("", "Error in resseting a password");
+                return View(model);
+            }
+
+            var user = await _userManager.FindByEmailAsync(model.EmailAddress);
+            var resetPasswordResult = await _userManager.ResetPasswordAsync(user, model.Token, model.Password);
+
+
+            return RedirectToAction("Index");
         }
     }
 }
