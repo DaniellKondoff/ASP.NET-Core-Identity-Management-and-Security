@@ -1,4 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks;
@@ -292,6 +294,62 @@ namespace PersonalPhotos.Controllers
             }
 
             return RedirectToAction(nameof(Index));
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> ExternalLogin(string provider, string returnUrl)
+        {
+            var redirectUrl = Url.Action("ExtarnalLoginCallBack", "Logins", new { returnUrl });
+            var property = _signInManager.ConfigureExternalAuthenticationProperties(provider, redirectUrl);
+
+            return Challenge(property, provider);
+        }
+
+        public async Task<IActionResult> ExtarnalLoginCallBack(string returnUrl = null, string remoteError = null)
+        {
+            if (remoteError != null)
+            {
+                return RedirectToAction("Index");
+            }
+
+            var info = await _signInManager.GetExternalLoginInfoAsync();
+            if (info == null)
+            {
+                return RedirectToAction("Index");
+            }
+
+            var result = await _signInManager.ExternalLoginSignInAsync(info.LoginProvider, info.ProviderKey, true, true);
+
+            if (result.Succeeded)
+            {
+                return RedirectToAction("Display", "Photos");
+            }
+
+            var emailAddress = info.Principal.FindFirstValue(ClaimTypes.Email);
+            var user = new IdentityUser { Email = emailAddress, UserName = emailAddress, SecurityStamp = new Guid().ToString() };
+
+            var identityUser = await _userManager.FindByEmailAsync(emailAddress);
+            if (identityUser == null)
+            {
+                await _userManager.CreateAsync(user);
+            }
+
+            var loginsInfo = await _userManager.GetLoginsAsync(user);
+
+            if (loginsInfo == null || loginsInfo.Any(x => x.LoginProvider == info.LoginProvider && info.ProviderKey == x.ProviderKey))
+            {
+                await _userManager.AddLoginAsync(user, info);
+            }
+
+            await _signInManager.SignInAsync(user, true);
+
+
+            if (!string.IsNullOrEmpty(returnUrl))
+            {
+                return Redirect(returnUrl);
+            }
+
+            return RedirectToAction("Display", "Photos");
         }
 
         private string FormatAuthKey(string authkey)

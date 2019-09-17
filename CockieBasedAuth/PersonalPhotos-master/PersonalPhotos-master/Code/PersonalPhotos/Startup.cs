@@ -83,6 +83,12 @@ namespace PersonalPhotos
             });
 
             services.Configure<EmailOptions>(Configuration.GetSection("Email"));
+
+            services.AddAuthentication().AddFacebook(opt =>
+            {
+                opt.AppId = Configuration.GetSection("Facebook").GetValue<string>("AppId");
+                opt.AppSecret = Configuration.GetSection("Facebook").GetValue<string>("AppSecret");
+            });
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
