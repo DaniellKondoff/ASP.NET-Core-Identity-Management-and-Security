@@ -56,6 +56,7 @@ namespace ImageGallery.Client
                   options.Scope.Add("profile");
                   options.Scope.Add("address");
                   options.Scope.Add("roles");
+                  options.Scope.Add("imagegalleryapi");
                   options.SaveTokens = true;
                   options.ClientSecret = "secret";
                   options.GetClaimsFromUserInfoEndpoint = true;
@@ -70,10 +71,7 @@ namespace ImageGallery.Client
                       NameClaimType = JwtClaimTypes.GivenName,
                       RoleClaimType = JwtClaimTypes.Role
                   };
-
               });
-
-
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
