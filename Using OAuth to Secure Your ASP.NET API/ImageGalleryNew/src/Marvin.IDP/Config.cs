@@ -1,11 +1,8 @@
 ﻿using IdentityServer4;
 using IdentityServer4.Models;
 using IdentityServer4.Test;
-using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Security.Claims;
-using System.Threading.Tasks;
 
 namespace Marvin.IDP
 {
@@ -27,7 +24,9 @@ namespace Marvin.IDP
                         new Claim("given_name", "Frank"),
                         new Claim("family_name", "Underwood"),
                         new Claim("address", "Main road 1"),
-                        new Claim("role", "FreeUser")
+                        new Claim("role", "FreeUser"),
+                        new Claim("subsLevel", "FreeUser"),
+                        new Claim("country", "nl")
                     }
                 },
                 new TestUser
@@ -41,7 +40,9 @@ namespace Marvin.IDP
                         new Claim("given_name", "Claire"),
                         new Claim("family_name", "Underwood"),
                         new Claim("address", "Main road 2"),
-                        new Claim("role", "PayingUser")
+                        new Claim("role", "PayingUser"),
+                        new Claim("subsLevel", "PayingUser"),
+                        new Claim("country", "be")
                     }
                 }
             };
@@ -55,7 +56,9 @@ namespace Marvin.IDP
                 new IdentityResources.OpenId(),
                 new IdentityResources.Profile(),
                 new IdentityResources.Address(),
-                new IdentityResource("roles", "Your role(s)", new List<string>() {"role"})
+                new IdentityResource("roles", "Your role(s)", new List<string>() {"role"}),
+                new IdentityResource("country", "The country you are living in", new List<string>() {"country"}),
+                new IdentityResource("subslevel", "Your subscription level", new List<string>() {"subslevel"})
             };
         }
 
@@ -91,7 +94,9 @@ namespace Marvin.IDP
                         IdentityServerConstants.StandardScopes.Profile,
                         IdentityServerConstants.StandardScopes.Address,
                         "roles",
-                        "imagegalleryapi"
+                        "imagegalleryapi",
+                        "country",
+                        "subslevel"
                     },
                     ClientSecrets =
                     {

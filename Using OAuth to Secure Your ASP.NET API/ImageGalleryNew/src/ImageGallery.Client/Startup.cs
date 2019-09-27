@@ -1,6 +1,8 @@
 ﻿using IdentityModel;
+using ImageGallery.Client.Authorization;
 using ImageGallery.Client.Services;
 using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
@@ -27,6 +29,27 @@ namespace ImageGallery.Client
         {
             // Add framework services.
             services.AddMvc();
+
+            services.AddAuthorization(authOptions =>
+            {
+                authOptions.AddPolicy("MustOwnImage", policyBuilder =>
+                {
+                    policyBuilder.RequireAuthenticatedUser();
+                    policyBuilder.AddRequirements(new MustOwnImageRequirment());
+                });
+            });
+
+            services.AddScoped<IAuthorizationHandler, MustOwnImageHandler>();
+
+            services.AddAuthorization(authOptions =>
+            {
+                authOptions.AddPolicy("CanOrderFrame", policyBuilder =>
+                {
+                    policyBuilder.RequireAuthenticatedUser();
+                    policyBuilder.RequireClaim("country", "be");
+                    policyBuilder.RequireClaim("subsLevel", "PayingUser");
+                });
+            });
 
             // register an IHttpContextAccessor so we can access the current
             // HttpContext in services by injecting it
@@ -56,6 +79,8 @@ namespace ImageGallery.Client
                   options.Scope.Add("profile");
                   options.Scope.Add("address");
                   options.Scope.Add("roles");
+                  options.Scope.Add("subsLevel");
+                  options.Scope.Add("country");
                   options.Scope.Add("imagegalleryapi");
                   options.SaveTokens = true;
                   options.ClientSecret = "secret";
@@ -65,6 +90,8 @@ namespace ImageGallery.Client
                   options.ClaimActions.DeleteClaim("idp");
                   //options.ClaimActions.DeleteClaim("address");
                   options.ClaimActions.MapUniqueJsonKey("role", "role");
+                  options.ClaimActions.MapUniqueJsonKey("subsLevel", "subsLevel");
+                  options.ClaimActions.MapUniqueJsonKey("country", "country");
 
                   options.TokenValidationParameters = new TokenValidationParameters
                   {
