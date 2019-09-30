@@ -67,7 +67,10 @@ namespace Marvin.IDP
             return new List<ApiResource>
             {
                 new ApiResource("imagegalleryapi", "Image Gallery API",
-                new List<string>() { "role" })
+                new List<string>() { "role" } )
+                {
+                    ApiSecrets = { new Secret("secret".Sha256()) }
+                }
             };
         }
 
@@ -80,6 +83,11 @@ namespace Marvin.IDP
                     ClientName = "Image Gallery",
                     ClientId = "imagegalleryclient",
                     AllowedGrantTypes = GrantTypes.Hybrid,
+                    AccessTokenType = AccessTokenType.Reference,
+                    AccessTokenLifetime = 120,
+                    AllowOfflineAccess = true,
+                    //RefreshTokenExpiration = TokenExpiration.Absolute,
+                    UpdateAccessTokenClaimsOnRefresh = true,
                     RedirectUris = new List<string>()
                     {
                         "https://localhost:44355/signin-oidc"
