@@ -17,9 +17,9 @@ namespace Marvin.IDP
             BuildWebHost(args).Run();
         }
 
-        public static IWebHost /* not the builder */ BuildWebHost(string[] args) =>
-         WebHost.CreateDefaultBuilder(args)
-             .UseStartup<Startup>()
-             .Build(); // this needs to be here
+        public static IWebHost BuildWebHost(string[] args) =>
+            WebHost.CreateDefaultBuilder(args)
+                .UseStartup<Startup>()
+                .Build();
     }
 }
